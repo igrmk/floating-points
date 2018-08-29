@@ -1,0 +1,158 @@
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{babel}
+\usepackage{enumitem}
+\usepackage{stmaryrd}
+\usepackage{cases}
+\usepackage{amsthm}
+
+\newcommand{\idiv}{\backslash}
+\newcommand{\llb}{\llbracket}
+\newcommand{\rrb}{\rrbracket}
+
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\newtheorem{lemma}{Lemma}
+
+\begin{document}
+
+\section{Notation}
+
+\begin{description}[leftmargin=!, labelwidth=1cm]
+    \item [$\mathbb{N}$]                  Integers
+    \item [$\mathbb{N}^0$]                Non-negative integers
+    \item [$\mathbb{N}^+$]                Positive integers
+    \item [$\lfloor a \rfloor$]           Rounding towards zero, floor
+    \item [$a \idiv b$]                   Integer division, the same as $\left\lfloor a/b \right\rfloor$
+    \item [$b \mid a$]                    $b$ divides $a$ and $a$ is not zero
+    \item [$b \nmid a$]                   $b$ doesn't divide $a$ or $a$ is zero
+    \item [{$\left[a \right]_N$}]         Rounding to nearest $10^{-N}k, k \in \mathbb{N}$, away from zero in case of uncertainty
+    \item [{$\left\llb a \right\rrb_N$}]  Rounding $N$ significant decimal figures, away from zero in case of uncertainty
+\end{description}
+
+\section{Binary to decimal conversion}
+
+Let we have \emph{positive} binary floating point number
+\begin{equation}
+    x = 2^{a}p,\: p \in \mathbb{N}^0, a \in \mathbb{N}
+\end{equation}
+
+We need to find decimal mantissa $m$ and decimal exponent $e$ such that
+\begin{align*}
+    x & = 10^e \times m \\
+    m & \in \mathbb{N}^0 \\
+    10 & \nmid m \\
+    e & \in \mathbb{N}
+\end{align*}
+
+It is always possible to rewrite it in such a way
+that mantissa is not divisible by neither $2$ nor $5$.
+\begin{align}
+    x & = 2^b 5^d q \label{canon} \\
+    q & \in \mathbb{N}^0 \nonumber \\
+    2 & \nmid q \nonumber \\
+    5 & \nmid q \nonumber \\
+    p & = 2^{b-a} 5^d q \nonumber
+\end{align}
+
+Taking into account that $5^d = 10^d 2^{-d}$ we can rewrite it as
+\begin{align}
+    x & = 10^d \times 2^{b-d} q \\
+    x & = 10^b \times 5^{d-b}q
+\end{align}
+
+The mantissa and the exponent should be integers. Therefore
+\begin{align*}
+    (m, e) & = \begin{cases}
+        (2^{b-d} q, d), & b-d \geq 0 \\
+        (5^{d-b} q, b), & b-d < 0
+    \end{cases} \\
+    m & = 2^{\max(b-d, 0)} 5^{\max(d-b, 0)} q \\
+    e & = \min(b, d)
+\end{align*}
+
+\section{Binary to decimal conversion with rounding to $N$ decimal digits after point}
+
+Firstly let us define rounding meaning here, we denote rounded number as $\left[x \right]_{N}$.
+We define rounding on $k$th interval where $k \in \mathbb{N}^0$.
+\begin{align*}
+    \left[x_k \right]_N & = \frac{k}{10^N} \\
+    x_k & \in \begin{cases}
+        \left[\frac{k-0.5}{10^N}, \frac{k+0.5}{10^N} \right), & k>0 \\
+        \left[0, \frac{0.5}{10^N} \right), & k=0
+    \end{cases}
+\end{align*}
+
+We will use following known trick to compute rounded value.
+\[
+    \left[x \right]_N = \frac{\left\lfloor 10^N x + 0.5 \right\rfloor}{10^N} \\
+\]
+
+We can consider only case $N < -e$.
+Otherwise rounded number will be equal to a given one.
+Let us denote $x' = \left\lfloor 10^N x + 0.5 \right\rfloor$
+and rewrite it in terms of the powers from equation \eqref{canon}.
+\begin{align}
+    x' & = \left\lfloor 5^{d+N} 2^{b+N}q + 0.5 \right\rfloor \nonumber \\
+    d' & = d+N \nonumber \\
+    b' & = b+N \nonumber \\
+    x' & = \left\lfloor 5^{d'} 2^{b'} q + 0.5 \right\rfloor \label{x-prime}
+\end{align}
+
+Finally this leads us to
+\begin{numcases}{x'=}
+    5^{d'} 2^{b'} q, &
+    $d' \geq 0, b' \geq 0$
+    \label{round-to-digits-gg}
+    \\
+    \left(5^{d'} q + 2^{-b'-1} \right) \idiv 2^{-b'}, &
+    $d' \geq 0, b' < 0$
+    \label{round-to-digits-gl}
+    \\
+    \left(2^{b'} q + 5^{-d'} \idiv 2 \right) \idiv 5^{-d'}, &
+    $d' < 0, b' \geq 0$
+    \label{round-to-digits-lg}
+    \\
+    \left(q + 5^{-d'} 2^{-b'-1} \right) \idiv \left(5^{-d'} 2^{-b'} \right), &
+    $d' < 0, b' < 0$
+    \label{round-to-digits-ll}
+\end{numcases}
+
+Cases
+\eqref{round-to-digits-gg},
+\eqref{round-to-digits-gl},
+\eqref{round-to-digits-ll}
+obviously follow from \eqref{x-prime}. Let's show that \eqref{round-to-digits-lg} is correct.
+
+\begin{lemma}
+    The following assertion is correct for every $x \in \mathbb{N}^0$, $y \in \mathbb{N}^0$ and $q \in \mathbb{N}^0$
+    \[
+        \left\lfloor \frac{2^x q}{5^y} + \frac{1}{2} \right\rfloor = \\
+        \left\lfloor \frac{2^x q - \frac{1}{2}}{5^y} + \frac{1}{2} \right\rfloor
+    \]
+\end{lemma}
+
+\begin{proof}
+    It is enough to proof that $\frac{2^x q}{5^y} + \frac{1}{2} < n+1$
+    follows to $\frac{2^x q - \frac{1}{2}}{5^y} + \frac{1}{2} < n+1$
+    and $\frac{2^x q}{5^y} + \frac{1}{2} \geq n$
+    follows to $\frac{2^x q - \frac{1}{2}}{5^y} + \frac{1}{2} \geq n$
+    where $n \in \mathbb{N}^0$.
+    Former is obvious. Let us proof latter. At first let us rewrite inequation.
+    \begin{align*}
+        \frac{2^x q}{5^y} + \frac{1}{2} & \geq n \\
+        \frac{5^y}{2} & \geq 5^y n - 2^x q
+    \end{align*}
+
+    Note that $2 \nmid 5^{y}$ and right hand side is integer, this leads us to
+    \begin{align*}
+        \frac{5^y - 1}{2} \geq 5^y n - 2^x q \\
+        \frac{2^x q - \frac{1}{2}}{5^y} + \frac{1}{2} \geq n
+    \end{align*}
+\end{proof}
+
+\end{document}
