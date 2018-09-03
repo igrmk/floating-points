@@ -7,6 +7,7 @@
 \usepackage{stmaryrd}
 \usepackage{cases}
 \usepackage{amsthm}
+\usepackage{numprint}
 
 \newcommand{\idiv}{\backslash}
 \newcommand{\llb}{\llbracket}
@@ -17,6 +18,7 @@
 \renewcommand\qedsymbol{$\blacksquare$}
 
 \newtheorem{lemma}{Lemma}
+\newtheorem{example}{Example}
 
 \begin{document}
 
@@ -36,7 +38,7 @@
 
 \section{Binary to decimal conversion}
 
-Let we have \emph{positive} binary floating point number
+Let we have \emph{positive} binary floating-point number
 \begin{equation}
     x = 2^{a}p,\: p \in \mathbb{N}^0, a \in \mathbb{N}
 \end{equation}
@@ -59,13 +61,14 @@ that mantissa is not divisible by neither $2$ nor $5$.
     p & = 2^{b-a} 5^d q \nonumber
 \end{align}
 
-Taking into account that $5^d = 10^d 2^{-d}$ we can rewrite it as
+Taking into account that $5^d = 10^d 2^{-d}$ we can rewrite it extracting tens exponent.
 \begin{align}
     x & = 10^d \times 2^{b-d} q \\
     x & = 10^b \times 5^{d-b}q
 \end{align}
 
-The mantissa and the exponent should be integers. Therefore
+The mantissa and the exponent should be integers.
+Therefore final result for decimal representation of given floating-point number is
 \begin{align*}
     (m, e) & = \begin{cases}
         (2^{b-d} q, d), & b-d \geq 0 \\
@@ -74,6 +77,17 @@ The mantissa and the exponent should be integers. Therefore
     m & = 2^{\max(b-d, 0)} 5^{\max(d-b, 0)} q \\
     e & = \min(b, d)
 \end{align*}
+
+\begin{example}
+For double-precision floating-point numbers following inequations are true
+    \begin{align*}
+        0 & \leq d \leq 22 \\
+        \numprint{-1022} & \leq b \leq \numprint{1075} \\
+        0 & \leq q \leq 2^{53} - 1 = \numprint{9007199254740991} \\
+        \numprint{-1022} & \leq e \leq 22 \\
+        0 & \leq m \leq (2^{53} - 1) \times 5^{1022}
+    \end{align*}
+\end{example}
 
 \section{Binary to decimal conversion with rounding to $N$ decimal digits after point}
 
@@ -154,5 +168,14 @@ obviously follow from \eqref{x-prime}. Let's show that \eqref{round-to-digits-lg
         \frac{2^x q - \frac{1}{2}}{5^y} + \frac{1}{2} \geq n
     \end{align*}
 \end{proof}
+
+\section{Binary to decimal conversion with rounding to $F$ significant figures}
+
+Rounding a decimal number to specified significant figures usually affects only its mantissa.
+And in rare cases an exponent can be incremented by one.
+Rounded mantissa $m''$ should satisfy following inequation.
+\[
+    0 \leq m'' < 10^F
+\]
 
 \end{document}
