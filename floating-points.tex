@@ -94,8 +94,8 @@ For double-precision floating-point numbers following inequations are true
 Firstly let us define rounding meaning here, we denote rounded number as $\left[x \right]_{N}$.
 We define rounding on $k$th interval where $k \in \mathbb{N}^0$.
 \begin{align*}
-    \left[x_k \right]_N & = \frac{k}{10^N} \\
-    x_k & \in \begin{cases}
+    \left[x \right]_N = \frac{k}{10^N},\,
+    \forall x \in \begin{cases}
         \left[\frac{k-0.5}{10^N}, \frac{k+0.5}{10^N} \right), & k>0 \\
         \left[0, \frac{0.5}{10^N} \right), & k=0
     \end{cases}
@@ -172,10 +172,19 @@ obviously follow from \eqref{x-prime}. Let's show that \eqref{round-to-digits-lg
 \section{Binary to decimal conversion with rounding to $F$ significant figures}
 
 Rounding a decimal number to specified significant figures usually affects only its mantissa.
-And in rare cases an exponent can be incremented by one.
+In rare cases an exponent can be incremented by one.
 Rounded mantissa $m''$ should satisfy following inequation.
 \[
     0 \leq m'' < 10^F
 \]
 
+Therefore we need to find minimal $g$ such that
+\begin{align*}
+    m / 10^g & < 10^F - 0.5 \\
+    \therefore 2m / 10^g & < 2 \times 10^F - 1 \\
+    \therefore (2m) \idiv 10^g & < 2 \times 10^F - 1
+\end{align*}
+
+Now we can find $g$ iteratively or use faster method if $g$ is known to be big.
+Then we round a value to $e-g$ digits.
 \end{document}
